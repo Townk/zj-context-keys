@@ -74,16 +74,22 @@ pub fn parse(spec: &str) -> Result<Vec<u8>, String> {
 /// literal `+` base key written as a doubled separator (e.g. `ctrl++`).
 fn split_spec(body: &str) -> Result<(Modifiers, String), String> {
     // Allow `-` as a separator too, but never split a lone `-` base key.
-    let normalized = if body == "-" { "-".to_string() } else { body.replace('-', "+") };
+    let normalized = if body == "-" {
+        "-".to_string()
+    } else {
+        body.replace('-', "+")
+    };
 
     let tokens: Vec<&str> = normalized.split('+').collect();
-    let (mod_tokens, base): (&[&str], String) =
-        if tokens.last() == Some(&"") && tokens.len() >= 2 {
-            // Trailing empty token ⇒ the base key is a literal `+`.
-            (&tokens[..tokens.len() - 2], "+".to_string())
-        } else {
-            (&tokens[..tokens.len() - 1], tokens[tokens.len() - 1].to_string())
-        };
+    let (mod_tokens, base): (&[&str], String) = if tokens.last() == Some(&"") && tokens.len() >= 2 {
+        // Trailing empty token ⇒ the base key is a literal `+`.
+        (&tokens[..tokens.len() - 2], "+".to_string())
+    } else {
+        (
+            &tokens[..tokens.len() - 1],
+            tokens[tokens.len() - 1].to_string(),
+        )
+    };
 
     let mut mods = Modifiers::default();
     for tok in mod_tokens {

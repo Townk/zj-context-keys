@@ -92,7 +92,7 @@ mod tests {
                    300 202 fzf\n\
                    999 1 launchd\n";
         let d = compute_descendants(ps, 100);
-        assert!(d.contains("zsh") == false, "root pid itself excluded");
+        assert!(!d.contains("zsh"), "root pid itself excluded");
         assert!(d.contains("find"));
         assert!(d.contains("fzf"));
         assert!(d.contains("sh"));

@@ -93,7 +93,7 @@ fn run_zellij_action(name: &str, args: &[String]) {
             toggle_focus_fullscreen()
         }
         "switch_mode" | "switchmode" | "switch_to_mode" => {
-            if let Some(mode) = args.first().and_then(parse_mode) {
+            if let Some(mode) = args.first().map(String::as_str).and_then(parse_mode) {
                 switch_to_input_mode(&mode);
             }
         }
@@ -124,7 +124,7 @@ fn parse_direction(s: &str) -> Option<Direction> {
     }
 }
 
-fn parse_mode(s: &String) -> Option<InputMode> {
+fn parse_mode(s: &str) -> Option<InputMode> {
     match s.to_lowercase().as_str() {
         "normal" => Some(InputMode::Normal),
         "locked" => Some(InputMode::Locked),

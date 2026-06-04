@@ -96,7 +96,7 @@ impl RuleSet {
 pub fn parse(input: &str) -> Result<RuleSet, String> {
     let mut set = RuleSet::default();
 
-    for raw in input.split(|c| c == '\n' || c == ';') {
+    for raw in input.split(['\n', ';']) {
         let clause = strip_comment(raw).trim();
         if clause.is_empty() {
             continue;
@@ -489,7 +489,10 @@ mod tests {
             Some(Action::Source { kitty: false })
         ));
         let r = parse("default: do move_focus down; when fzf: $source").unwrap();
-        assert!(matches!(r.overrides[0].action, Action::Source { kitty: false }));
+        assert!(matches!(
+            r.overrides[0].action,
+            Action::Source { kitty: false }
+        ));
     }
 
     #[test]

@@ -1,5 +1,9 @@
 # zj-context-keys
 
+[![CI](https://github.com/Townk/zj-context-keys/actions/workflows/ci.yml/badge.svg)](https://github.com/Townk/zj-context-keys/actions/workflows/ci.yml)
+[![Latest build](https://img.shields.io/github/v/release/Townk/zj-context-keys?include_prereleases&label=latest)](https://github.com/Townk/zj-context-keys/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 A tiny [Zellij](https://zellij.dev) plugin that lets you bind a key the way
 you normally would in your config, but choose what it does based on the
 **foreground process running in the focused pane**.
@@ -18,7 +22,46 @@ it from keybindings via `MessagePlugin`. Each keybinding carries its own rule
 in the `payload`, so the logic lives next to the binding instead of in some
 separate config blob.
 
-## Build
+## Install
+
+Every release ships a prebuilt `zj-context-keys.wasm` — you don't need a Rust
+toolchain to use the plugin. Two stable download URLs are published:
+
+| URL | Tracks |
+|---|---|
+| `https://github.com/Townk/zj-context-keys/releases/download/latest/zj-context-keys.wasm` | The **rolling build** — refreshed on every push to `master`. |
+| `https://github.com/Townk/zj-context-keys/releases/download/v0.1.0/zj-context-keys.wasm` | A **pinned version** — immutable once published. |
+
+### Option A — reference the release URL directly (recommended)
+
+Zellij can load a plugin straight from a URL and caches it locally, so you can
+point your config at the release asset and skip the manual download entirely.
+Use the URL anywhere this README writes `file:~/.config/zellij/plugins/zj-context-keys.wasm`:
+
+```kdl
+load_plugins {
+    "https://github.com/Townk/zj-context-keys/releases/download/latest/zj-context-keys.wasm"
+}
+```
+
+> Pin to a `v*` URL for reproducible setups; use the `latest` URL to always
+> ride the newest build. After changing the URL, clear Zellij's plugin cache
+> (`~/.cache/zellij`) or restart the session to force a re-download.
+
+### Option B — download the asset into your plugins directory
+
+```sh
+mkdir -p ~/.config/zellij/plugins
+curl -fL -o ~/.config/zellij/plugins/zj-context-keys.wasm \
+  https://github.com/Townk/zj-context-keys/releases/download/latest/zj-context-keys.wasm
+```
+
+Then refer to it as `file:~/.config/zellij/plugins/zj-context-keys.wasm` (the
+form used throughout the examples below).
+
+## Build from source
+
+If you'd rather build it yourself:
 
 ```sh
 rustup target add wasm32-wasip1   # one-time
@@ -32,6 +75,8 @@ wherever you keep Zellij plugins, e.g.:
 mkdir -p ~/.config/zellij/plugins
 cp target/wasm32-wasip1/release/zj-context-keys.wasm ~/.config/zellij/plugins/
 ```
+
+`just install` does the build-and-copy in one step.
 
 ## Configure
 
@@ -254,7 +299,7 @@ notification, with zero flash:
 
 ```kdl
 bind "Y" {
-    MessagePlugin "context-keys" {
+    MessagePlugin "file:~/.config/zellij/plugins/zj-context-keys.wasm" {
         name "copy-pwd"
         payload "default: run /Users/me/.config/zellij/scripts/copy-pwd {pid}"
     }
@@ -375,6 +420,22 @@ bind "Alt 1" {
   form for apps that negotiate that protocol.
 - No globbing on process names; commas only. PRs welcome.
 
+## Development
+
+The host-agnostic logic (rule DSL, key-spec encoding, process-tree walking)
+lives in the library crate and is unit-tested on the host toolchain — no WASM
+runtime required:
+
+```sh
+cargo test                 # run the unit tests
+cargo clippy --all-targets -- -D warnings
+cargo fmt --check
+```
+
+A [`justfile`](justfile) wraps the common tasks (`just build`, `just test`,
+`just lint`, `just install`). CI runs the same lint/test/build matrix on every
+push, and pushing a `vX.Y.Z` tag publishes a versioned release.
+
 ## License
 
-MIT
+Licensed under the [MIT License](LICENSE).

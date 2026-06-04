@@ -88,18 +88,15 @@ impl ZellijPlugin for State {
                 }
                 set_timeout(POLL_INTERVAL_S);
             }
-            Event::RunCommandResult(exit_code, stdout, _stderr, context) => {
-                if context.get(CTX_KEY).map(String::as_str) == Some(CTX_PS) {
-                    self.refresh_in_flight = false;
-                    if exit_code == Some(0) {
-                        if let Some(id) = context
-                            .get(CTX_PANE_ID)
-                            .and_then(|s| s.parse::<u32>().ok())
-                        {
-                            if let Some(&root_pid) = self.pane_pid.get(&id) {
-                                let descendants = compute_descendants(&stdout, root_pid);
-                                self.pane_descendants.insert(id, descendants);
-                            }
+            Event::RunCommandResult(exit_code, stdout, _stderr, context)
+                if context.get(CTX_KEY).map(String::as_str) == Some(CTX_PS) =>
+            {
+                self.refresh_in_flight = false;
+                if exit_code == Some(0) {
+                    if let Some(id) = context.get(CTX_PANE_ID).and_then(|s| s.parse::<u32>().ok()) {
+                        if let Some(&root_pid) = self.pane_pid.get(&id) {
+                            let descendants = compute_descendants(&stdout, root_pid);
+                            self.pane_descendants.insert(id, descendants);
                         }
                     }
                 }
@@ -118,7 +115,10 @@ impl ZellijPlugin for State {
             if !self.dropped_keybind_warned {
                 self.dropped_keybind_warned = true;
                 if self.permissions_denied {
-                    eprintln!("zj-context-keys: permissions denied; ignoring keybind '{}'", msg.name);
+                    eprintln!(
+                        "zj-context-keys: permissions denied; ignoring keybind '{}'",
+                        msg.name
+                    );
                 } else {
                     eprintln!(
                         "zj-context-keys: keybind '{}' received before permissions were granted; ignoring",
@@ -287,10 +287,10 @@ impl State {
             _ => return,
         };
 
-        if !self.pane_pid.contains_key(&id) {
+        if let std::collections::hash_map::Entry::Vacant(entry) = self.pane_pid.entry(id) {
             match get_pane_pid(pane_id) {
                 Ok(pid) => {
-                    self.pane_pid.insert(id, pid);
+                    entry.insert(pid);
                 }
                 Err(_) => return,
             }
@@ -303,4 +303,3 @@ impl State {
         run_command(&["ps", "-A", "-o", "pid=,ppid=,comm="], ctx);
     }
 }
-
