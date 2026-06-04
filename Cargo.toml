@@ -1,0 +1,28 @@
+[package]
+name = "zj-context-keys"
+version = "0.1.0"
+edition = "2021"
+description = "Zellij plugin: context-aware keybindings dispatched by the focused pane's foreground process"
+license = "MIT"
+
+[lib]
+name = "zj_context_keys"
+path = "src/lib.rs"
+
+[[bin]]
+name = "zj-context-keys"
+path = "src/main.rs"
+# The binary is the WASM plugin entry point; its zellij-tile calls resolve to
+# host shim symbols that only exist under wasm32-wasi. Excluding it from host
+# test/bench builds keeps `cargo test` working (logic lives in the library).
+test = false
+bench = false
+
+[dependencies]
+zellij-tile = "0.44"
+
+[profile.release]
+opt-level = "s"
+lto = true
+strip = true
+codegen-units = 1
