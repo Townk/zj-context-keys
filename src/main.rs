@@ -107,6 +107,15 @@ impl ZellijPlugin for State {
     }
 
     fn pipe(&mut self, msg: PipeMessage) -> bool {
+        // We only dispatch rules sent by user keybinds / the CLI. Plugin-to-
+        // plugin broadcasts (e.g. zj-hud's `__zj_hud_sync_state`) are delivered
+        // to every loaded plugin; parsing their payloads as rules just spams
+        // "bad rule" and risks flooding Zellij's plugin stderr buffer. Drop
+        // them before any parsing or logging.
+        if matches!(msg.source, PipeSource::Plugin(_)) {
+            return false;
+        }
+
         // Keybind messages are time-sensitive: a press maps to whatever pane
         // is focused *now*. A `PipeSource::Keybind` carries no originating
         // pane id, so a message queued before permissions were granted can't

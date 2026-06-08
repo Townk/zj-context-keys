@@ -1,6 +1,6 @@
 [package]
 name = "zj-context-keys"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2021"
 description = "Zellij plugin: context-aware keybindings dispatched by the focused pane's foreground process"
 license = "MIT"
