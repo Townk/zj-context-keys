@@ -6,8 +6,15 @@ wasm_path := justfile_directory() + "/target/wasm32-wasip1/release/zj-context-ke
 plugin_dir := env_var('HOME') + "/.config/zellij/plugins"
 repo := "Townk/zj-context-keys"
 
+# Ensure the wasm target Zellij loads is installed in the active toolchain.
+# `rust-toolchain.toml` pins `wasm32-wasip1`, but rustup doesn't always
+# auto-install targets from that file, so a plain `just build` can fail with
+# `can't find crate for core` until the target is added once.
+target:
+    rustup target list --installed | grep -q '^wasm32-wasip1$' || rustup target add wasm32-wasip1
+
 # Build the plugin in release mode for Zellij's wasm target.
-build:
+build: target
     cargo build --release --target wasm32-wasip1
 
 # Run the host-side unit tests.
@@ -15,7 +22,7 @@ test:
     cargo test
 
 # Check formatting and lint with the same strictness as CI.
-lint:
+lint: target
     cargo fmt --check
     cargo clippy --all-targets -- -D warnings
 
@@ -60,6 +67,9 @@ release version:
         echo "error: local master is not in sync with origin/master; pull/push first" >&2
         exit 1
     fi
+
+    # Ensure the wasm target is installed before the quality gate needs it.
+    rustup target list --installed | grep -q '^wasm32-wasip1$' || rustup target add wasm32-wasip1
 
     # Quality gate before mutating anything.
     cargo fmt --check
