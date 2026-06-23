@@ -30,7 +30,7 @@ toolchain to use the plugin. Two stable download URLs are published:
 | URL | Tracks |
 |---|---|
 | `https://github.com/Townk/zj-context-keys/releases/download/latest/zj-context-keys.wasm` | The **rolling build** — refreshed on every push to `master`. |
-| `https://github.com/Townk/zj-context-keys/releases/download/v0.1.0/zj-context-keys.wasm` | A **pinned version** — immutable once published. |
+| `https://github.com/Townk/zj-context-keys/releases/download/v0.1.2/zj-context-keys.wasm` | A **pinned version** — immutable once published. |
 
 ### Option A — reference the release URL directly (recommended)
 
